@@ -17,17 +17,7 @@ namespace LoadBalancer
                 host.Open();
                 Console.WriteLine("LoadBalancer je uspesno pokrenut ");
                 Console.ReadKey();
-                ChannelFactory<IEntitet> servis = new ChannelFactory<IEntitet>("Servis");
-
-                IEntitet kanal = servis.CreateChannel();
-
-                Console.WriteLine("LOADBALANCER POVEZAN NA SERVER");
-
-                kanal.Read();
-                kanal.Modify();
-                kanal.Supervise();
-                Console.ReadKey();
-                host.Close();
+               
             }
 
         }
