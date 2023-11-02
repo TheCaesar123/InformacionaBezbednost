@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,14 +13,25 @@ namespace Worker
     {
         static void Main(string[] args)
         {
-            ChannelFactory<IProsledi> servis = new ChannelFactory<IProsledi>("ServisLoad");
+            NetTcpBinding binding = new NetTcpBinding();
+            string address = "net.tcp://localhost:8002/IProsledi";
 
-            IProsledi kanal = servis.CreateChannel();
+            binding.Security.Mode = SecurityMode.Transport;
+            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+            binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
 
-            Console.WriteLine("WORKER POVEZAN NA LOADBALANCER");
+            Console.WriteLine("Korisnik koji je pokrenuo klijenta je : " + WindowsIdentity.GetCurrent().Name);
+            using (WorkerProxy proxy = new  WorkerProxy(binding, address))
+            {
+                Console.WriteLine("WORKER POVEZAN NA LOADBALANCER");
+                proxy.Prosledi();
+                Console.ReadKey();
+            }
 
-            kanal.Prosledi();
-            Console.ReadKey();
+           
+
+            
+            
         }
     }
 }
