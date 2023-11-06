@@ -1,10 +1,6 @@
 ﻿using Common;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LoadBalancer
 {
@@ -12,13 +8,20 @@ namespace LoadBalancer
     {
         static void Main(string[] args)
         {
-            using (ServiceHost host = new ServiceHost(typeof(ProslediServer)))
-            {
-                host.Open();
-                Console.WriteLine("LoadBalancer je uspesno pokrenut ");
-                Console.ReadKey();
-               
-            }
+
+            NetTcpBinding binding = new NetTcpBinding();
+            string address = "net.tcp://localhost:8002/IProsledi";
+
+            binding.Security.Mode = SecurityMode.Transport;
+            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+            binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+
+            ServiceHost host = new ServiceHost(typeof(ProslediServer));
+            host.AddServiceEndpoint(typeof(IProsledi), binding, address);
+            Console.WriteLine("LoadBalancer je uspesno pokrenut ");
+            Console.ReadKey();
+
+
 
         }
     }

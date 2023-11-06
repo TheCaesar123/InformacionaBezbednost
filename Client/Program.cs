@@ -1,7 +1,9 @@
 ﻿using Common;
+using Manager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,16 +14,22 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            ChannelFactory<IEntitet> servis = new ChannelFactory<IEntitet>("Servis");
 
-            IEntitet kanal = servis.CreateChannel();
+            string srvCertCN = "wcfservice";
 
-            Console.WriteLine("KLIJENT POVEZAN NA SERVER");
+            NetTcpBinding binding = new NetTcpBinding();
+            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Certificate;
 
-            kanal.Read();
-            kanal.Modify();
-            kanal.Supervise();
-            Console.ReadKey();
+            X509Certificate2 srvCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, srvCertCN);
+            EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:8001/Servis"), new X509CertificateEndpointIdentity(srvCert));
+
+            using (ClientFactory proxy = new ClientFactory(binding, address))
+            {
+                proxy.Read();
+                proxy.Modify();
+                proxy.Supervise();
+                Console.ReadLine();
+            }
         }
     }
 }

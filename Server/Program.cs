@@ -1,10 +1,10 @@
 ﻿using Common;
+using Manager;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
+using System.ServiceModel.Security;
 
 namespace Server
 {
@@ -12,19 +12,45 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            ChannelFactory<IEntitet> servis = new ChannelFactory<IEntitet>("Servis");
+            
+            NetTcpBinding loadBalancerBinding = new NetTcpBinding();
+            string loadBalancerAddress = "net.tcp://localhost:8002/IProsledi";
 
-            IEntitet kanal = servis.CreateChannel();
+            loadBalancerBinding.Security.Mode = SecurityMode.Transport;
+            loadBalancerBinding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+            loadBalancerBinding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
 
-            Console.WriteLine("SERVER POVEZAN NA LoadBalancer");
-
-            using (ServiceHost host = new ServiceHost(typeof(EntitetServer))) 
+            Console.WriteLine("Korisnik koji je pokrenuo klijenta je : " + WindowsIdentity.GetCurrent().Name);
+            using (ServerProxy proxy = new ServerProxy(loadBalancerBinding, loadBalancerAddress))
             {
-                host.Open();
-                Console.WriteLine("Servis je uspesno pokrenut ");
-                Console.ReadKey();
-                host.Close();
+                Console.WriteLine("SERVER POVEZAN NA LoadBalancer");
+                proxy.Prosledi();
+
             }
+
+            string srvCertCN = "wcfservice";
+            NetTcpBinding binding = new NetTcpBinding();
+            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Certificate;
+
+            string address = "net.tcp://localhost:8001/Servis";
+            ServiceHost host = new ServiceHost(typeof(EntitetServer));
+            host.AddServiceEndpoint(typeof(IEntitet), binding, address);
+
+            host.Credentials.ClientCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.ChainTrust;
+
+            host.Credentials.ClientCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
+
+            host.Credentials.ServiceCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
+            
+            host.Open();
+            Console.WriteLine("Servis je uspesno pokrenut ");
+            Console.ReadKey();
+
+            host.Close();
+
+
+
         }
     }
 }
+
