@@ -1,6 +1,7 @@
 ﻿using Common;
 using Manager;
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.ServiceModel;
@@ -12,7 +13,7 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            
+            Debugger.Launch();
             NetTcpBinding loadBalancerBinding = new NetTcpBinding();
             string loadBalancerAddress = "net.tcp://localhost:8002/IProsledi";
 
@@ -41,7 +42,9 @@ namespace Server
             host.Credentials.ClientCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
 
             host.Credentials.ServiceCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
-            
+
+            //host.Authorization.ServiceAuthorizationManager = new MyAuthorizationManager();
+
             host.Open();
             Console.WriteLine("Servis je uspesno pokrenut ");
             Console.ReadKey();

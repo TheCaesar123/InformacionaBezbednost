@@ -2,6 +2,7 @@
 using Manager;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
@@ -14,7 +15,7 @@ namespace Client
     {
         static void Main(string[] args)
         {
-
+            Debugger.Launch();
             string srvCertCN = "wcfservice";
 
             NetTcpBinding binding = new NetTcpBinding();

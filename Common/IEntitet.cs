@@ -11,10 +11,13 @@ namespace Common
     public interface IEntitet
     {
         [OperationContract]
+        [FaultContract(typeof(SecurityException))]
         void Read();
         [OperationContract]
+        [FaultContract(typeof(SecurityException))]
         void Supervise();
         [OperationContract]
+        [FaultContract(typeof(SecurityException))]
         void Modify();
     }
 }

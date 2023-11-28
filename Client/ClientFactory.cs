@@ -13,8 +13,8 @@ namespace Client
 
         public ClientFactory(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
         {
-            string cltCertCN = "wcfclient";
-                //Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
+            string cltCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
+            
 
             this.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = System.ServiceModel.Security.X509CertificateValidationMode.ChainTrust;
             this.Credentials.ServiceCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
@@ -42,6 +42,10 @@ namespace Client
                 Console.WriteLine("Read...");
 
             }
+            catch (FaultException<SecurityException> e)
+            {
+                Console.WriteLine("Error while trying to Read: {0}", e.Detail.Message);
+            }
             catch (Exception e)
             {
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
@@ -57,6 +61,10 @@ namespace Client
                 factory.Supervise();
                 Console.WriteLine("Supervise...");
             }
+            catch (FaultException<SecurityException> e)
+            {
+                Console.WriteLine("Error while trying to Supervise: {0}", e.Detail.Message);
+            }
             catch (Exception e)
             {
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
@@ -69,6 +77,10 @@ namespace Client
             {
                 factory.Modify();
                 Console.WriteLine("Modify...");
+            }
+            catch (FaultException<SecurityException> e)
+            {
+                Console.WriteLine("Error while trying to Modify: {0}", e.Detail.Message);
             }
             catch (Exception e)
             {
