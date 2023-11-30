@@ -1,6 +1,8 @@
 ﻿using Common;
 using Manager;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.ServiceModel;
@@ -10,12 +12,14 @@ namespace Client
     public class ClientFactory : ChannelFactory<IEntitet>, IEntitet, IDisposable
     {
         IEntitet factory;
-
+        public static List<string> cert { get; set; } = new List<string>();
         public ClientFactory(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
         {
-            string cltCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
-            
+            //string cltCertCN = "wcfsupervisor";
 
+            string cltCertCN =  Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
+
+            CuvanjeUlogovanogClienta(cltCertCN);
             this.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = System.ServiceModel.Security.X509CertificateValidationMode.ChainTrust;
             this.Credentials.ServiceCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
 
@@ -33,9 +37,25 @@ namespace Client
 
             this.Close();
         }
-
-        public void Read()
+        public void Modify()
         {
+            try
+            {
+                factory.Modify();
+                Console.WriteLine();
+                Console.WriteLine("Modify...");
+            }
+            catch (FaultException<SecurityException> e)
+            {
+                Console.WriteLine("Error while trying to Modify: {0}", e.Detail.Message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
+            }
+        }
+            public void Read()
+            {
             try
             {
                 factory.Read();
@@ -71,21 +91,11 @@ namespace Client
             }
         }
 
-        public void Modify()
+       
+        public void CuvanjeUlogovanogClienta(string cert)
         {
-            try
-            {
-                factory.Modify();
-                Console.WriteLine("Modify...");
-            }
-            catch (FaultException<SecurityException> e)
-            {
-                Console.WriteLine("Error while trying to Modify: {0}", e.Detail.Message);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
-            }
+            string text = cert;
+            File.WriteAllText("C:/Bezbednost/Client/bin/Debug/cert.txt", text);  // Uneti odgovarajucu putanju 
         }
     }
 }

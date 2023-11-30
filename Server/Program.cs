@@ -13,7 +13,7 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            Debugger.Launch();
+            
             NetTcpBinding loadBalancerBinding = new NetTcpBinding();
             string loadBalancerAddress = "net.tcp://localhost:8002/IProsledi";
 
