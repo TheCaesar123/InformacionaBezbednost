@@ -58,7 +58,8 @@ namespace Manager
             {
                 if (c.SubjectName.Name.Contains(string.Format("CN={0}", subjectName)))
                 {
-                    Console.WriteLine(c.SubjectName.Name);
+                    c.PrivateKey.ToString();
+                    //Console.WriteLine(c.SubjectName.Name);
                     if (c.SubjectName.Name.Contains("OU="))
                     {
                         string[] pom = c.SubjectName.Name.Split(','); // CN=Wcf..., OU=group...

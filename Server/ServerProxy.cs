@@ -19,6 +19,7 @@ namespace Server
 
         public void Prosledi()
         {
+            factory.Prosledi();
             Console.WriteLine("ServerProxy poziv.");
         }
     }

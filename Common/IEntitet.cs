@@ -12,12 +12,14 @@ namespace Common
     {
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        void Read();
+        void Read(byte[] sdf);
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         void Supervise();
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         void Modify();
+        [OperationContract]
+        void TestConnection();
     }
 }

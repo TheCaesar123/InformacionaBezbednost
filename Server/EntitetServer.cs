@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.ServiceModel;
@@ -17,6 +18,8 @@ namespace Server
 {
     class EntitetServer : IEntitet
     {
+
+        string putanja = "D:/Program Files (x86)/InformacionaBezbednost/Client/bin/Debug/cert.txt";
         public void Modify()
         {
          
@@ -32,13 +35,15 @@ namespace Server
             }
         }
         
-        public void Read()
+        public void Read(byte [] sdf)
         {
-           
-            
-          
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, CitanjeUlogovanogClienta()).Contains("OU=read"))
+            {
                 Console.WriteLine("READ");
+                string key = SecretKey.LoadKey("D:/Program Files (x86)/InformacionaBezbednost/clientKey.txt");
+                _3DES_Algorithm.Decrypt(key, CipherMode.ECB, _3DES_Algorithm.Encrypted);
+                Console.WriteLine("{0}", _3DES_Algorithm.Decrypted);
+            }
             else
             {
                 string name = Manager.Formatter.ParseName(Thread.CurrentPrincipal.Identity.Name);
@@ -65,9 +70,13 @@ namespace Server
         }
         public string CitanjeUlogovanogClienta()
         {
-            string client = File.ReadAllText("C:/Bezbednost/Client/bin/Debug/cert.txt"); // uneti odgovarajucu putanju
-            Console.WriteLine(client);
+            string client = File.ReadAllText(putanja); // uneti odgovarajucu putanju
             return client;
+        }
+
+        public void TestConnection()
+        {
+            Console.WriteLine("Klijent {0} povezan na server.", CitanjeUlogovanogClienta());
         }
     }
 }

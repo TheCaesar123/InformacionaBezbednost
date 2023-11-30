@@ -18,8 +18,10 @@ namespace LoadBalancer
 
             ServiceHost host = new ServiceHost(typeof(ProslediServer));
             host.AddServiceEndpoint(typeof(IProsledi), binding, address);
+            host.Open();
             Console.WriteLine("LoadBalancer je uspesno pokrenut ");
             Console.ReadKey();
+            host.Close();
 
 
 

@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SecretKey.cs" />
+    <Compile Include="_3DES_Algorithm.cs" />
     <Compile Include="Entitet.cs" />
     <Compile Include="IEntitet.cs" />
     <Compile Include="IProsledi.cs" />

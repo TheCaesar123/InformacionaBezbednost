@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Client
@@ -25,9 +27,16 @@ namespace Client
             X509Certificate2 srvCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, srvCertCN);
             EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:8001/Servis"), new X509CertificateEndpointIdentity(srvCert));
 
+            string keyFile = "D:/Program Files (x86)/InformacionaBezbednost/clientKey.txt";
+
+            string key = SecretKey.GenerateKey();
+
+            SecretKey.StoreKey(key, keyFile);
+            byte[] sdf = null;
             using (ClientFactory proxy = new ClientFactory(binding, address))
             {
-                proxy.Read();
+                proxy.TestConnection();
+                proxy.Read(sdf);
                 proxy.Modify();
                 proxy.Supervise();
                 Console.ReadLine();
