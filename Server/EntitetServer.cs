@@ -19,7 +19,7 @@ namespace Server
     class EntitetServer : IEntitet
     {
 
-        string putanja = "D:/Program Files (x86)/InformacionaBezbednost/Client/bin/Debug/cert.txt";
+        string putanja = "D:/Program Files (x86)/TEST/Client/bin/Debug/cert.txt";
         public void Modify()
         {
          
@@ -35,14 +35,17 @@ namespace Server
             }
         }
         
-        public void Read(byte [] sdf)
+        public void Read()
         {
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, CitanjeUlogovanogClienta()).Contains("OU=read"))
             {
                 Console.WriteLine("READ");
-                string key = SecretKey.LoadKey("D:/Program Files (x86)/InformacionaBezbednost/clientKey.txt");
-                _3DES_Algorithm.Decrypt(key, CipherMode.ECB, _3DES_Algorithm.Encrypted);
-                Console.WriteLine("{0}", _3DES_Algorithm.Decrypted);
+                //string key = SecretKey.LoadKey("D:/Program Files (x86)/TEST/clientKey.txt");
+                //_3DES_Algorithm.Decrypt(key, CipherMode.ECB, sdf);
+                // Console.WriteLine("{0}", _3DES_Algorithm.Decrypted);
+                string cipher = File.ReadAllText("D:/Program Files (x86)/TEST/encripted.txt");
+
+                //Console.WriteLine(_3DES_Algorithm.Decrypt(SecretKey.LoadKey("D:/Program Files (x86)/TEST/clientKey.txt"), CipherMode.ECB, cipher));
             }
             else
             {

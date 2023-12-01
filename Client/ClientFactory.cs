@@ -15,7 +15,7 @@ namespace Client
     public class ClientFactory : ChannelFactory<IEntitet>, IEntitet, IDisposable
     {
         string ulogovanKorisnik = "";
-        string putanja = "D:/Program Files (x86)/InformacionaBezbednost/Client/bin/Debug/cert.txt";
+        string putanja = "D:/Program Files (x86)/TEST/Client/bin/Debug/cert.txt";
         IEntitet factory;
         public ClientFactory(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
         {
@@ -70,25 +70,27 @@ namespace Client
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
             }
         }
-            public void Read(byte [] sdf)
+            public void Read()
             {
             try
             {
-                string key = SecretKey.LoadKey("D:/Program Files (x86)/InformacionaBezbednost/clientKey.txt");
-                string message = "TEST";
-                _3DES_Algorithm.Encrypt(key, CipherMode.ECB, message);
-                Console.WriteLine("{0}", _3DES_Algorithm.Encrypted);
-                factory.Read(_3DES_Algorithm.Encrypted);
+                //string key = SecretKey.LoadKey("D:/Program Files (x86)/TEST/clientKey.txt");
+                //string message = "TEST";
+                //_3DES_Algorithm.Encrypt(key, CipherMode.ECB, message);
+                // Console.WriteLine("{0}", _3DES_Algorithm.Encrypted);
+                //factory.Read(_3DES_Algorithm.Encrypted);
+                factory.Read();
                 Console.WriteLine("Read...");
+                
 
             }
-            catch (FaultException<SecurityException> e)
+            catch (FaultException<SecurityException> ex)
             {
-                Console.WriteLine("Error while trying to Read: {0}", e.Detail.Message);
+                Console.WriteLine("Error while trying to Read: {0}", ex.Detail.Message);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
+                Console.WriteLine("[FAILED] ERROR = {0}", ex.Message);
             }
 
         }

@@ -8,24 +8,23 @@ namespace Common
     [DataContract]
     public class _3DES_Algorithm
     {
-        private static byte [] encrypted = null;
-        private static byte [] decrypted = null;
+        private string encrypted = null;
+        private string decrypted = null;
         [DataMember]
-        public static byte[] Encrypted { get => encrypted; set => encrypted = value; }
+        public string Encrypted { get => encrypted; set => encrypted = value; }
         [DataMember]
-        public static byte[] Decrypted { get => decrypted; set => decrypted = value; }
+        public  string Decrypted { get => decrypted; set => decrypted = value; }
 
-        public static void Encrypt(string secretKey, CipherMode mode, string message = "Message")
+        public static byte[] Encrypt(string secretKey, CipherMode mode, string message = "Message")
         {
 
             byte[] body = ASCIIEncoding.ASCII.GetBytes(message);
-            System.Console.WriteLine(body.ToString());
             byte[] encryptedBody = null;
             TripleDESCryptoServiceProvider tripleDesCryptoProvider = new TripleDESCryptoServiceProvider
             {
                 Key = ASCIIEncoding.ASCII.GetBytes(secretKey),
                 Mode = mode,
-                Padding = PaddingMode.None
+                Padding = PaddingMode.PKCS7
             };
 
 
@@ -34,12 +33,16 @@ namespace Common
             {
                 using (CryptoStream cryptoStream = new CryptoStream(memoryStream, tripleDesEncryptTransform, CryptoStreamMode.Write))
                 {
-                    cryptoStream.Write(body, 0, body.Length - 1);
+                    cryptoStream.Write(body, 0, body.Length);
                     encryptedBody = memoryStream.ToArray();
                 }
             }
-
-            encrypted = encryptedBody;
+            System.Console.WriteLine("-----------------");
+            
+            string retVal = ASCIIEncoding.ASCII.GetString(encryptedBody);
+            System.Console.WriteLine(retVal);
+            System.Console.WriteLine("-----------------");
+            return encryptedBody;
         }
 
 
@@ -47,7 +50,7 @@ namespace Common
         /// Function that decrypts the cipher text from inFile and stores as plaintext to outFile
         /// </summary>
         /// <param name="secretKey"> symmetric encryption key </param>
-        public static void Decrypt(string secretKey, CipherMode mode, byte[] encryptedBody)
+        public static byte[] Decrypt(string secretKey, CipherMode mode, byte[] encryptedBody)
         {
             byte[] body = encryptedBody;         
             byte[] decryptedBody = null;
@@ -68,8 +71,11 @@ namespace Common
                     cryptoStream.Read(decryptedBody, 0, decryptedBody.Length);
                 }
             }
-
-            decrypted = encryptedBody;
+            System.Console.WriteLine("-----------------");
+            string retVal = ASCIIEncoding.ASCII.GetString(decryptedBody);
+            System.Console.WriteLine(retVal);
+            System.Console.WriteLine("-----------------");
+            return decryptedBody;
         }
     }
 }

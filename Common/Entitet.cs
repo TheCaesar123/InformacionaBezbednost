@@ -10,8 +10,20 @@ namespace Common
     [DataContract]
     public class Entitet
     {
-        private int id;
+        int id;
+        
+
+        public Entitet(int id)
+        {
+            this.id = id;
+        }
         [DataMember]
         public int Id { get => id; set => id = value; }
+        public override string ToString()
+        {
+            string retVal;
+            retVal = "" + id;
+            return retVal;
+        }
     }
 }

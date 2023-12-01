@@ -12,7 +12,7 @@ namespace Common
     {
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        void Read(byte[] sdf);
+        void Read();
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         void Supervise();
