@@ -14,7 +14,9 @@ namespace Server
 
         public ServerProxy(NetTcpBinding binding, string address) : base(binding, address)
         {
+           
             factory = this.CreateChannel();
+            
         }
 
         public void Prosledi()
@@ -22,5 +24,6 @@ namespace Server
             //factory.Prosledi();
             Console.WriteLine("ServerProxy poziv.");
         }
+      
     }
 }

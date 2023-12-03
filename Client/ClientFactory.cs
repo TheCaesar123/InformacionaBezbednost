@@ -14,21 +14,24 @@ namespace Client
     
     public class ClientFactory : ChannelFactory<IEntitet>, IEntitet, IDisposable
     {
-        string ulogovanKorisnik = "";
-        string putanja = "D:/Program Files (x86)/TEST/Client/bin/Debug/cert.txt";
+        public static string ulogovanKorisnik = "";
+      
         IEntitet factory;
         public ClientFactory(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
         {
             string cltCertCN =  Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
 
             ulogovanKorisnik = cltCertCN;
-            CuvanjeUlogovanogClienta();
+            //CuvanjeUlogovanogClienta();
             this.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = System.ServiceModel.Security.X509CertificateValidationMode.ChainTrust;
             this.Credentials.ServiceCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
 
             this.Credentials.ClientCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
 
+
+            
             factory = this.CreateChannel();
+           
         }
 
         public void Dispose()
@@ -40,11 +43,11 @@ namespace Client
 
             this.Close();
         }
-        public void TestConnection()
+        public void TestConnection(string Korisnik)
         {
             try
             {
-                factory.TestConnection();
+                factory.TestConnection(Korisnik);
                 Console.WriteLine("Klijent {0} povezan na server...", ulogovanKorisnik);
             }
             catch (Exception e)
@@ -53,11 +56,12 @@ namespace Client
                 Console.WriteLine("{0}", e.Message);
             }
         }
-        public void Modify()
+        public void Modify(string Korisnik, Entitet entitet)
         {
             try
             {
-                factory.Modify();
+                
+                factory.Modify(Korisnik, (entitet));
                 Console.WriteLine();
                 Console.WriteLine("Modify...");
             }
@@ -70,7 +74,7 @@ namespace Client
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
             }
         }
-            public void Read()
+            public void Read(string Korisnik, Entitet entitet)
             {
             try
             {
@@ -79,7 +83,10 @@ namespace Client
                 //_3DES_Algorithm.Encrypt(key, CipherMode.ECB, message);
                 // Console.WriteLine("{0}", _3DES_Algorithm.Encrypted);
                 //factory.Read(_3DES_Algorithm.Encrypted);
-                factory.Read();
+         
+                factory.Read(Korisnik, entitet);
+                
+          
                 Console.WriteLine("Read...");
                 
 
@@ -95,12 +102,12 @@ namespace Client
 
         }
 
-        public void Supervise()
+        public void Supervise(string Korisnik, Entitet entitet)
         {
 
             try
             {
-                factory.Supervise();
+                factory.Supervise(Korisnik, entitet);
                 Console.WriteLine("Supervise...");
             }
             catch (FaultException<SecurityException> e)
@@ -114,10 +121,6 @@ namespace Client
         }
 
        
-        public void CuvanjeUlogovanogClienta()
-        {
-            string text = ulogovanKorisnik;
-            File.WriteAllText(putanja, text); 
-        }
+        
     }
 }

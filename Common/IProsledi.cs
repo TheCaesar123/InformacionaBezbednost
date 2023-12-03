@@ -13,5 +13,6 @@ namespace Common
     {
         [OperationContract]
         void Prosledi();
+      
     }
 }

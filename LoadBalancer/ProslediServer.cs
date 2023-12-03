@@ -7,11 +7,16 @@ using System.Threading.Tasks;
 
 namespace LoadBalancer
 {
-    class ProslediServer : IProsledi
+    public class ProslediServer : IProsledi
     {
         public void Prosledi()
         {
             Console.WriteLine("PROSLEDI");
+        }
+
+        public void ServerTOClient(Entitet e)
+        {
+            Console.WriteLine(e.Name+"kurcina");
         }
     }
 }

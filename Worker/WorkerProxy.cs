@@ -21,5 +21,10 @@ namespace Worker
         {
             Console.WriteLine("WorkerProxy poziv.");
         }
+
+        public void ServerTOClient(Entitet entitet)
+        {
+            Console.WriteLine(entitet.Name+"picka");
+        }
     }
 }

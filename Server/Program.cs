@@ -11,9 +11,11 @@ namespace Server
 {
     class Program
     {
+       
         static void Main(string[] args)
         {
-            
+           
+
             NetTcpBinding loadBalancerBinding = new NetTcpBinding();
             string loadBalancerAddress = "net.tcp://localhost:8002/IProsledi";
 
@@ -43,16 +45,14 @@ namespace Server
 
             host.Credentials.ServiceCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, srvCertCN);
 
-            //host.Authorization.ServiceAuthorizationManager = new MyAuthorizationManager();
-
+     
             host.Open();
             Console.WriteLine("Servis je uspesno pokrenut ");
+           
             Console.ReadKey();
 
             host.Close();
-
-
-
+           
         }
     }
 }
