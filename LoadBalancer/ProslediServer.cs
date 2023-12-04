@@ -16,7 +16,7 @@ namespace LoadBalancer
 
         public void ServerTOClient(Entitet e)
         {
-            Console.WriteLine(e.Name+"kurcina");
+            Console.WriteLine(e.Name+"nesto");
         }
     }
 }
