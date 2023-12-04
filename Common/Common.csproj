@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,6 +34,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IdentityModel" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
@@ -43,6 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientCertValidator.cs" />
+    <Compile Include="CServiceCertValidator.cs" />
+    <Compile Include="DigitalSignature.cs" />
     <Compile Include="SecretKey.cs" />
     <Compile Include="_3DES_Algorithm.cs" />
     <Compile Include="Entitet.cs" />
@@ -50,6 +55,12 @@
     <Compile Include="IProsledi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecurityException.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Menager\Menager.csproj">
+      <Project>{9FF9384D-B3A4-4F8D-A2D9-E001443DD1C5}</Project>
+      <Name>Menager</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

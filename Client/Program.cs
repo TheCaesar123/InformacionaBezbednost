@@ -28,6 +28,8 @@ namespace Client
             X509Certificate2 srvCert = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, srvCertCN);
             EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:8001/Servis"), new X509CertificateEndpointIdentity(srvCert));
 
+            string signCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name) + "_sign";
+          //  string signCertCN = "wcfreader_sign";
             string keyFile = "C:/Bezbednost/clientKey.txt";
 
             string key = SecretKey.GenerateKey();
@@ -43,21 +45,26 @@ namespace Client
                 
             }
             message = MessageForSend(message);
-            byte[] toEncrypt = ASCIIEncoding.ASCII.GetBytes(message);
+          //  byte[] toEncrypt = ASCIIEncoding.ASCII.GetBytes(message);
             byte[] encripted = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
-          
+            string potpisanaPoruka = ASCIIEncoding.ASCII.GetString(encripted);
             Entitet entitet = new Entitet();
             entitet.Id = 13;
             string Korisnik = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
-            //string Korisnik = "wcfmodifier";
+          // string Korisnik =  "wcfreader";
+         
             using (ClientFactory proxy = new ClientFactory(binding, address))
             {
-
-
                 proxy.TestConnection(Korisnik);
-                proxy.Read(Korisnik, entitet, encripted);
-                proxy.Modify(Korisnik, entitet, encripted);
-                proxy.Supervise(Korisnik, entitet, encripted);
+                X509Certificate2 certificateSign = CertManager.GetCertificateFromStorage(StoreName.My,
+                   StoreLocation.LocalMachine, signCertCN);
+                byte[] signature = DigitalSignature.Create(potpisanaPoruka, "SHA1", certificateSign);
+
+
+                
+                proxy.Read(Korisnik, entitet, encripted, signature);
+                proxy.Modify(Korisnik, entitet, encripted, signature);
+                proxy.Supervise(Korisnik, entitet, encripted, signature);
                 proxy.DataFromServerToCLientDecripted();
 
                 Console.ReadLine();

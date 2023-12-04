@@ -12,28 +12,29 @@ using System.Threading;
 
 namespace Client
 {
-    
+
     public class ClientFactory : ChannelFactory<IEntitet>, IEntitet, IDisposable
     {
         public static string ulogovanKorisnik = "";
         public static byte[] poruka;
-      
+
         IEntitet factory;
         public ClientFactory(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
         {
-            string cltCertCN =  Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
+            string cltCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
             //string cltCertCN = ulogovanKorisnik;
             ulogovanKorisnik = cltCertCN;
-            
+
             this.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = System.ServiceModel.Security.X509CertificateValidationMode.ChainTrust;
             this.Credentials.ServiceCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
+            this.Credentials.ServiceCertificate.Authentication.CustomCertificateValidator = new ClientCertValidator();
 
             this.Credentials.ClientCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
 
 
-            
+
             factory = this.CreateChannel();
-           
+
         }
 
         public void Dispose()
@@ -58,13 +59,13 @@ namespace Client
                 Console.WriteLine("{0}", e.Message);
             }
         }
-        public void Modify(string Korisnik, Entitet entitet, byte[] encripted)
+        public void Modify(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign)
         {
             try
             {
-                
-                factory.Modify(Korisnik, (entitet), encripted);
-                
+
+                factory.Modify(Korisnik, (entitet), encripted, sign);
+
                 Console.WriteLine("Modify...");
                 poruka = factory.DataFromServerToCLient();
             }
@@ -77,28 +78,18 @@ namespace Client
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
             }
         }
-            public void Read(string Korisnik, Entitet entitet, byte[] encripted)
-            {
+        public void Read(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign)
+        {
             try
             {
-                //string key = SecretKey.LoadKey("D:/Program Files (x86)/TEST/clientKey.txt");
-                //string message = "TEST";
-                //_3DES_Algorithm.Encrypt(key, CipherMode.ECB, message);
-                // Console.WriteLine("{0}", _3DES_Algorithm.Encrypted);
-                //factory.Read(_3DES_Algorithm.Encrypted);
-         
-                factory.Read(Korisnik, entitet, encripted);
-                
-                
+
+                factory.Read(Korisnik, entitet, encripted, sign);
+
+
                 Console.WriteLine("Read...");
-               
+
 
                 poruka = factory.DataFromServerToCLient();
-            //    string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
-            //    string retVal = ASCIIEncoding.ASCII.GetString(_3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted));
-
-
-           //     Console.WriteLine("decriptovana poruka ->" + retVal);
 
             }
             catch (FaultException<SecurityException> ex)
@@ -114,16 +105,16 @@ namespace Client
 
         public byte[] DataFromServerToCLient()
         {
-                      
+
             return null;
         }
-    
-        public void Supervise(string Korisnik, Entitet entitet, byte[] encripted)
+
+        public void Supervise(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign)
         {
 
             try
             {
-                factory.Supervise(Korisnik, entitet, encripted);
+                factory.Supervise(Korisnik, entitet, encripted, sign);
                 Console.WriteLine("Supervise...");
                 poruka = factory.DataFromServerToCLient();
             }
@@ -145,7 +136,7 @@ namespace Client
                 string retVal = ASCIIEncoding.ASCII.GetString(_3DES_Algorithm.Decrypt(key, CipherMode.ECB, poruka));
 
 
-                Console.WriteLine("Dekriptovani podaci iz baze ->" + retVal);
+                Console.WriteLine($"Dekriptovani podaci iz baze  za klijenta [{ulogovanKorisnik.ToUpper()}]->" + retVal);
             }
             catch (Exception e)
             {
