@@ -24,7 +24,7 @@ namespace Worker
 
         public void ServerTOClient(Entitet entitet)
         {
-            Console.WriteLine(entitet.Name+"picka");
+            Console.WriteLine(entitet.Name+"nestooo");
         }
     }
 }
