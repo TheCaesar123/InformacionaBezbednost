@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.ServiceModel;
+using System.Text;
 using System.Threading;
 
 namespace Client
@@ -15,14 +16,15 @@ namespace Client
     public class ClientFactory : ChannelFactory<IEntitet>, IEntitet, IDisposable
     {
         public static string ulogovanKorisnik = "";
+        public static byte[] poruka;
       
         IEntitet factory;
         public ClientFactory(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
         {
             string cltCertCN =  Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
-
+            //string cltCertCN = ulogovanKorisnik;
             ulogovanKorisnik = cltCertCN;
-            //CuvanjeUlogovanogClienta();
+            
             this.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = System.ServiceModel.Security.X509CertificateValidationMode.ChainTrust;
             this.Credentials.ServiceCertificate.Authentication.RevocationMode = X509RevocationMode.NoCheck;
 
@@ -56,14 +58,15 @@ namespace Client
                 Console.WriteLine("{0}", e.Message);
             }
         }
-        public void Modify(string Korisnik, Entitet entitet)
+        public void Modify(string Korisnik, Entitet entitet, byte[] encripted)
         {
             try
             {
                 
-                factory.Modify(Korisnik, (entitet));
-                Console.WriteLine();
+                factory.Modify(Korisnik, (entitet), encripted);
+                
                 Console.WriteLine("Modify...");
+                poruka = factory.DataFromServerToCLient();
             }
             catch (FaultException<SecurityException> e)
             {
@@ -74,7 +77,7 @@ namespace Client
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
             }
         }
-            public void Read(string Korisnik, Entitet entitet)
+            public void Read(string Korisnik, Entitet entitet, byte[] encripted)
             {
             try
             {
@@ -84,11 +87,18 @@ namespace Client
                 // Console.WriteLine("{0}", _3DES_Algorithm.Encrypted);
                 //factory.Read(_3DES_Algorithm.Encrypted);
          
-                factory.Read(Korisnik, entitet);
+                factory.Read(Korisnik, entitet, encripted);
                 
-          
+                
                 Console.WriteLine("Read...");
-                
+               
+
+                poruka = factory.DataFromServerToCLient();
+            //    string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
+            //    string retVal = ASCIIEncoding.ASCII.GetString(_3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted));
+
+
+           //     Console.WriteLine("decriptovana poruka ->" + retVal);
 
             }
             catch (FaultException<SecurityException> ex)
@@ -102,13 +112,20 @@ namespace Client
 
         }
 
-        public void Supervise(string Korisnik, Entitet entitet)
+        public byte[] DataFromServerToCLient()
+        {
+                      
+            return null;
+        }
+    
+        public void Supervise(string Korisnik, Entitet entitet, byte[] encripted)
         {
 
             try
             {
-                factory.Supervise(Korisnik, entitet);
+                factory.Supervise(Korisnik, entitet, encripted);
                 Console.WriteLine("Supervise...");
+                poruka = factory.DataFromServerToCLient();
             }
             catch (FaultException<SecurityException> e)
             {
@@ -120,7 +137,20 @@ namespace Client
             }
         }
 
-       
-        
+        public void DataFromServerToCLientDecripted()
+        {
+            try
+            {
+                string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
+                string retVal = ASCIIEncoding.ASCII.GetString(_3DES_Algorithm.Decrypt(key, CipherMode.ECB, poruka));
+
+
+                Console.WriteLine("Dekriptovani podaci iz baze ->" + retVal);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
+            }
+        }
     }
 }

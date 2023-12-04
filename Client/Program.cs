@@ -45,21 +45,20 @@ namespace Client
             message = MessageForSend(message);
             byte[] toEncrypt = ASCIIEncoding.ASCII.GetBytes(message);
             byte[] encripted = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
-            //string putanja = "D:/Program Files (x86)/TEST/encripted.txt";
-            byte[] decripted = _3DES_Algorithm.Decrypt(key, System.Security.Cryptography.CipherMode.ECB, encripted);
-            //File.WriteAllText(putanja, encripted);
+          
             Entitet entitet = new Entitet();
             entitet.Id = 13;
             string Korisnik = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
-         
+            //string Korisnik = "wcfmodifier";
             using (ClientFactory proxy = new ClientFactory(binding, address))
             {
 
 
                 proxy.TestConnection(Korisnik);
-                proxy.Read(Korisnik, entitet);
-                proxy.Modify(Korisnik, entitet);
-                proxy.Supervise(Korisnik, entitet);
+                proxy.Read(Korisnik, entitet, encripted);
+                proxy.Modify(Korisnik, entitet, encripted);
+                proxy.Supervise(Korisnik, entitet, encripted);
+                proxy.DataFromServerToCLientDecripted();
 
                 Console.ReadLine();
             }

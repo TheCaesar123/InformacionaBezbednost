@@ -18,12 +18,55 @@ namespace Server
 {
     public class EntitetServer : IEntitet
     {
-        
-        
-        public void Modify(string Korisnik, Entitet entitet)
+        public static string DataForClient { get; set; }
+        public byte[] DataFromServerToCLient()
+        {
+            string key = SecretKey.GenerateKey();
+            SecretKey.StoreKey(key ,"C:/Bezbednost/clientKey.txt");
+
+            string message = MessageForSend(DataForClient);
+            byte[] encriptedDataForClient = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
+            
+            return encriptedDataForClient;
+        }
+        public string MessageForSend(string message)
+        {
+
+
+            string retVal;
+            char[] m = message.ToCharArray();
+            if (m.Length % 8 != 0)
+            {
+                int n = 8 - (m.Length % 8);
+                Array.Resize(ref m, m.Length + n);
+                for (int i = m.Length; i < 7; i++)
+                {
+                    m[i] = ' ';
+                }
+            }
+            retVal = new string(m);
+
+            return retVal;
+
+        }
+        public void DataFromServerToCLientDecripted()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Modify(string Korisnik, Entitet entitet, byte[] encripted)
         {
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, Korisnik).Contains("OU=modify"))
+            { 
                 Console.WriteLine("MODIFY");
+                string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
+                entitet.Dencripted = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted);
+                string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
+                Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
+
+                DataForClient = File.ReadAllText("C:/Bezbednost/encripted.txt");
+                DataFromServerToCLient();
+            }
             else
             {
                 string name = Thread.CurrentPrincipal.Identity.Name;
@@ -34,18 +77,20 @@ namespace Server
             }
         }
         
-        public void Read(string Korisnik, Entitet entitet)
+        public void Read(string Korisnik, Entitet entitet, byte[] encripted)       
         {
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, Korisnik).Contains("OU=read"))
             {
                 Console.WriteLine("READ");
-                //string key = SecretKey.LoadKey("D:/Program Files (x86)/TEST/clientKey.txt");
-                //_3DES_Algorithm.Decrypt(key, CipherMode.ECB, sdf);
-                // Console.WriteLine("{0}", _3DES_Algorithm.Decrypted);
-                string cipher = File.ReadAllText("C:/Bezbednost/encripted.txt");
-                entitet.Name = "radi";
+                string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
+                entitet.Dencripted = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted);
+                string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
+                Console.WriteLine("Dekriptovana poruka od strane klijenta -> "+ DecriptedMessage);
+                
+                DataForClient = File.ReadAllText("C:/Bezbednost/encripted.txt");
+                DataFromServerToCLient();
              
-                //Console.WriteLine(_3DES_Algorithm.Decrypt(SecretKey.LoadKey("D:/Program Files (x86)/TEST/clientKey.txt"), CipherMode.ECB, cipher));
+                
             }
             else
             {
@@ -60,11 +105,20 @@ namespace Server
        
        
 
-        public void Supervise(string Korisnik, Entitet entitet)
+        public void Supervise(string Korisnik, Entitet entitet, byte[] encripted)
         {
             //Console.WriteLine("SUPERVISE");
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, Korisnik).Contains("OU=supervise"))
+            {
                 Console.WriteLine("SUPERVISE");
+                string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
+                entitet.Dencripted = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted);
+                string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
+                Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
+
+                DataForClient = File.ReadAllText("C:/Bezbednost/encripted.txt");
+                DataFromServerToCLient();
+            }
             else
             {
                 string name = Thread.CurrentPrincipal.Identity.Name;

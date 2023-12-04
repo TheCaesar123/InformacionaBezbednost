@@ -71,9 +71,9 @@ namespace Common
                     cryptoStream.Read(decryptedBody, 0, decryptedBody.Length);
                 }
             }
-            System.Console.WriteLine("-----------------");
+           // System.Console.WriteLine("-----------------");
             string retVal = ASCIIEncoding.ASCII.GetString(decryptedBody);
-            System.Console.WriteLine(retVal);
+          //  System.Console.WriteLine(retVal);
             System.Console.WriteLine("-----------------");
             return decryptedBody;
         }

@@ -14,7 +14,10 @@ namespace Common
         public int Id { get; set; }
         [DataMember]
         public string Name { get; set; }
-
+        [DataMember]
+        public byte[] Encripted { get; set; }
+        [DataMember]
+        public byte[] Dencripted { get; set; }
         public Entitet()
         {
             
