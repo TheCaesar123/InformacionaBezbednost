@@ -24,7 +24,7 @@ namespace Server
         {
             string key = SecretKey.GenerateKey();
             SecretKey.StoreKey(key ,"C:/Bezbednost/clientKey.txt");
-
+            DataForClient = File.ReadAllText("C:/Bezbednost/Baza.txt");
             string message = MessageForSend(DataForClient);
           
             byte[] encriptedDataForClient = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
@@ -46,7 +46,7 @@ namespace Server
                 string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
                 Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
 
-                DataForClient = File.ReadAllText("C:/Bezbednost/Baza.txt");
+              
               //  DataFromServerToCLient();
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
@@ -84,7 +84,7 @@ namespace Server
                 Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
                 
 
-                DataForClient = File.ReadAllText("C:/Bezbednost/Baza.txt");
+               
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{Korisnik}'s sign is valid");
@@ -129,7 +129,7 @@ namespace Server
                 string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
                 Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
 
-                DataForClient = File.ReadAllText("C:/Bezbednost/Baza.txt");
+           
           //      DataFromServerToCLient();
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
