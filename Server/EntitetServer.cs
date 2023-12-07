@@ -51,7 +51,16 @@ namespace Server
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{Korisnik}'s sign is valid");
+                    try
+                    {
 
+                        Audit.AuthorizationSuccess(Korisnik,
+                            OperationContext.Current.IncomingMessageHeaders.Action);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                     DataFromServerToCLient();
                 }
                 else
@@ -89,6 +98,16 @@ namespace Server
                 {
                     Console.WriteLine($"{Korisnik}'s sign is valid");
 
+                    try
+                    {
+                        
+                        Audit.AuthorizationSuccess(Korisnik,
+                            OperationContext.Current.IncomingMessageHeaders.Action);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                     DataFromServerToCLient();
                 }
                 else
@@ -135,7 +154,19 @@ namespace Server
                 {
                     Console.WriteLine($"{Korisnik}'s sign is valid");
 
+                    try
+                    {
+
+                        Audit.AuthorizationSuccess(Korisnik,
+                            OperationContext.Current.IncomingMessageHeaders.Action);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                     DataFromServerToCLient();
+                   
+
                 }
                 else
                 {
