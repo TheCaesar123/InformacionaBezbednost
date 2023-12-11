@@ -40,9 +40,10 @@ namespace Client
             string message = Console.ReadLine();
             while (message.Length == 0)
             {
-                Console.WriteLine("Nste uneli poruku : ");
+                Console.WriteLine("Nste uneli poruku: ");
+               
                 message = Console.ReadLine();
-                
+               
             }
             message = MessageForSend(message);
           //  byte[] toEncrypt = ASCIIEncoding.ASCII.GetBytes(message);
@@ -69,8 +70,9 @@ namespace Client
 
                 Console.ReadLine();
             }
-        }
 
+        }
+       
         static string MessageForSend(string message)
         {
 

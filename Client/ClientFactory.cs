@@ -58,6 +58,7 @@ namespace Client
                 Console.WriteLine("Konekcija nije uspesna");
                 Console.WriteLine("{0}", e.Message);
             }
+
         }
         public void Modify(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign)
         {

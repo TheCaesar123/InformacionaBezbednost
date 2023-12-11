@@ -39,10 +39,11 @@ namespace Common
 
             if (customLog != null)
             {
-                string UserAuthenticationSuccess =
-                    AuditEvents.AuthenticationSuccess;
-                string message = String.Format(UserAuthenticationSuccess,
-                    userName);
+                 // string UserAuthenticationSuccess =
+                // AuditEvents.AuthenticationSuccess;
+                //   string message = String.Format(UserAuthenticationSuccess,
+                //  userName);
+                string message = $"Client {userName} is successfully authenticated";
                 customLog.WriteEntry(message);
             }
             else
@@ -57,10 +58,11 @@ namespace Common
             //TO DO
             if (customLog != null)
             {
-                string AuthorizationSuccess =
+                /*string AuthorizationSuccess =
                     AuditEvents.AuthorizationSuccess;
                 string message = String.Format(AuthorizationSuccess,
-                    userName, serviceName);
+                    userName, serviceName);*/
+                string message = $"Client {userName} is successfully authorized, and he can to access to database";
                 customLog.WriteEntry(message);
             }
             else
@@ -80,10 +82,13 @@ namespace Common
         {
             if (customLog != null)
             {
+                DateTime time = new DateTime();
                 string AuthorizationFailed =
                     AuditEvents.AuthorizationFailed;
-                string message = String.Format(AuthorizationFailed,
-                    userName, serviceName, reason);
+                //  string message = String.Format(AuthorizationFailed,
+                //    userName, serviceName, reason);
+                string message = $"Access is denied. User [{userName.ToUpper()}] tried to call Read method (time: {time.TimeOfDay}). " +
+                    $"For this method user needs to be member of group {reason}.";
                 customLog.WriteEntry(message);
             }
             else

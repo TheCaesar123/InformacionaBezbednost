@@ -34,8 +34,10 @@ namespace Server
       
         public void Modify(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign)
         {
+            
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, Korisnik).Contains("OU=modify"))
-            { 
+            {
+              
                 Console.WriteLine("MODIFY");
                 string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
                 string clientNameSign = Korisnik + "_sign";
@@ -45,12 +47,14 @@ namespace Server
                 entitet.Dencripted = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted);
                 string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
                 Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
+               
 
-              
-              //  DataFromServerToCLient();
+
+                //  DataFromServerToCLient();
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{Korisnik}'s sign is valid");
+                    DataFromServerToCLient();
                     try
                     {
 
@@ -61,17 +65,27 @@ namespace Server
                     {
                         Console.WriteLine(e.Message);
                     }
-                    DataFromServerToCLient();
                 }
                 else
                 {
                     Console.WriteLine("Sign is invalid");
+                   
                 }
             }
             else
             {
-                string name = Thread.CurrentPrincipal.Identity.Name;
+          
                 DateTime time = DateTime.Now;
+                try
+                {
+                    Audit.AuthorizationFailed(Korisnik, OperationContext.Current.IncomingMessageHeaders.Action, "Modify");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message + "modify");
+                }
+
+
                 string message = String.Format($"Access is denied. User [{Korisnik.ToUpper()}] tried to call Modify method (time: { time.TimeOfDay}). " +
                     "For this method user needs to be member of group Modify.");
                 throw new FaultException<SecurityException>(new SecurityException(message));
@@ -80,6 +94,7 @@ namespace Server
         
         public void Read(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign)       
         {
+            
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, Korisnik).Contains("OU=read"))
             {
                 Console.WriteLine("READ");
@@ -88,19 +103,21 @@ namespace Server
                 StoreLocation.LocalMachine, clientNameSign);
                 string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
                 string message = ASCIIEncoding.ASCII.GetString(encripted);
+                
                 entitet.Dencripted = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted);
                 string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
                 Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
-                
-
-               
+              
+              
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{Korisnik}'s sign is valid");
 
+                    
+                    DataFromServerToCLient();
                     try
                     {
-                        
+
                         Audit.AuthorizationSuccess(Korisnik,
                             OperationContext.Current.IncomingMessageHeaders.Action);
                     }
@@ -108,25 +125,33 @@ namespace Server
                     {
                         Console.WriteLine(e.Message);
                     }
-                    DataFromServerToCLient();
                 }
                 else
                 {
                     Console.WriteLine("Sign is invalid");
+                   
                 }
                
-               
+                
              
                 
             }
             else
             {
-                string name = Manager.Formatter.ParseName(Thread.CurrentPrincipal.Identity.Name);
+               // string name = Manager.Formatter.ParseName(Thread.CurrentPrincipal.Identity.Name);
                 DateTime time = DateTime.Now;
-
+                try
+                {
+                    Audit.AuthorizationFailed(Korisnik, OperationContext.Current.IncomingMessageHeaders.Action, "Read");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message + "reader");
+                }
                 string message = String.Format($"Access is denied. User [{Korisnik.ToUpper()}] tried to call Read method (time: {time.TimeOfDay}). " +
                     "For this method user needs to be member of group Read.");
                 throw new FaultException<SecurityException>(new SecurityException(message));
+              
             }
         }
 
@@ -147,13 +172,13 @@ namespace Server
                 entitet.Dencripted = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted);
                 string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
                 Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
+               
 
-           
-          //      DataFromServerToCLient();
+                //      DataFromServerToCLient();
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{Korisnik}'s sign is valid");
-
+                    DataFromServerToCLient();
                     try
                     {
 
@@ -164,21 +189,26 @@ namespace Server
                     {
                         Console.WriteLine(e.Message);
                     }
-                    DataFromServerToCLient();
-                   
-
                 }
                 else
                 {
                     Console.WriteLine("Sign is invalid");
+                    
                 }
 
             }
             else
             {
-                string name = Thread.CurrentPrincipal.Identity.Name;
+      
                 DateTime time = DateTime.Now;
-           
+                try
+                {
+                    Audit.AuthorizationFailed(Korisnik, OperationContext.Current.IncomingMessageHeaders.Action, "Supervise");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message + "supervisor");
+                }
                 string message = String.Format($"Access is denied. User [{Korisnik.ToUpper()}] tried to call Supervise method (time: {time.TimeOfDay}). "+"For this method user needs to be member of group Supervise.");
                 throw new FaultException<SecurityException>(new SecurityException(message));
        
@@ -186,9 +216,17 @@ namespace Server
         }
       
 
-        public void TestConnection(string Korinik)
+        public void TestConnection(string Korisnik)
         {
-            Console.WriteLine("Klijent {0} povezan na server.", Korinik);
+            Console.WriteLine("Klijent {0} povezan na server.", Korisnik);
+            try
+            {
+                Audit.AuthenticationSuccess(Korisnik);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
         public void DataFromServerToCLientDecripted()
         {
