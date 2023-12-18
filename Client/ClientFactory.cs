@@ -60,12 +60,12 @@ namespace Client
             }
 
         }
-        public void Modify(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign)
+        public void Modify(string id, string korisnik, byte[] sign)
         {
             try
             {
 
-                factory.Modify(Korisnik, (entitet), encripted, sign);
+                factory.Modify(id, korisnik, sign);
 
                 Console.WriteLine("Modify...");
                 poruka = factory.DataFromServerToCLient();
@@ -79,18 +79,18 @@ namespace Client
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
             }
         }
-        public void Read(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign)
+        public byte[] Read(byte[] id, string korisnik, byte[] sign)
         {
             try
             {
 
-                factory.Read(Korisnik, entitet, encripted, sign);
+                poruka = factory.Read(id, korisnik, sign);
 
 
                 Console.WriteLine("Read...");
 
 
-                poruka = factory.DataFromServerToCLient();
+               
 
             }
             catch (FaultException<SecurityException> ex)
@@ -102,6 +102,7 @@ namespace Client
                 Console.WriteLine("[FAILED] ERROR = {0}", ex.Message);
             }
 
+            return null;
         }
 
         public byte[] DataFromServerToCLient()
@@ -110,12 +111,12 @@ namespace Client
             return null;
         }
 
-        public void Supervise(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign)
+        public void Supervise(string id, string korisnik, byte[] sign)
         {
 
             try
             {
-                factory.Supervise(Korisnik, entitet, encripted, sign);
+                factory.Supervise(id, korisnik, sign);
                 Console.WriteLine("Supervise...");
                 poruka = factory.DataFromServerToCLient();
             }
@@ -137,7 +138,7 @@ namespace Client
                 string retVal = ASCIIEncoding.ASCII.GetString(_3DES_Algorithm.Decrypt(key, CipherMode.ECB, poruka));
 
 
-                Console.WriteLine($"Dekriptovani podaci iz baze  za klijenta [{ulogovanKorisnik.ToUpper()}]->" + retVal);
+                Console.WriteLine($"Dekriptovani podaci iz baze  za klijenta [{ulogovanKorisnik.ToUpper()}]-> \n" + retVal + "\n");
             }
             catch (Exception e)
             {

@@ -37,11 +37,12 @@ namespace Common
                     encryptedBody = memoryStream.ToArray();
                 }
             }
+            /*
             System.Console.WriteLine("-----------------");
             
             string retVal = ASCIIEncoding.ASCII.GetString(encryptedBody);
             System.Console.WriteLine(retVal);
-            System.Console.WriteLine("-----------------");
+            System.Console.WriteLine("-----------------");*/
             return encryptedBody;
         }
 

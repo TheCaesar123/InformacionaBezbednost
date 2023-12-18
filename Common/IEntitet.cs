@@ -12,13 +12,13 @@ namespace Common
     {
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        void Read(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign);
+        byte[] Read(byte[] id, string Korisnik, byte[] sign);
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        void Supervise(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign);
+        void Supervise(string id, string Korisnik, byte[] sign);
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        void Modify(string Korisnik, Entitet entitet, byte[] encripted, byte[] sign);
+        void Modify(string id, string Korisnik, byte[] sign);
         [OperationContract]
         void TestConnection(string Korisnik);
         [OperationContract]

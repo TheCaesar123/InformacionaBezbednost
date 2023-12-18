@@ -15,14 +15,19 @@ namespace Common
         [DataMember]
         public string Name { get; set; }
         [DataMember]
-        public byte[] Encripted { get; set; }
+        public string SID { get; set; }
         [DataMember]
-        public byte[] Dencripted { get; set; }
+        public DateTime Time { get; set; }
         public Entitet()
         {
             
         }
-        
-        
+
+        public override string ToString()
+        {
+            string retVal = "";
+            retVal += Id.ToString() + "|" + Name + "|" + SID + "|" + Time.ToString() + ";";
+            return retVal;
+        }
     }
 }
