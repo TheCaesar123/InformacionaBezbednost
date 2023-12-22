@@ -29,49 +29,31 @@ namespace Client
             EndpointAddress address = new EndpointAddress(new Uri("net.tcp://localhost:8001/Servis"), new X509CertificateEndpointIdentity(srvCert));
 
 
-            //  string signCertCN = "wcfreader_sign";
-            //string keyFile = "C:/Bezbednost/clientKey.txt";
-
-            //string key = SecretKey.GenerateKey();
-
-            //SecretKey.StoreKey(key, keyFile);
-            //string message = "12345678";
-
-            DateTime t = DateTime.Now;
-            Console.WriteLine(t);
+          
             string allEntities = File.ReadAllText("C:/Bezbednost/Baza.txt");
-            string[] entitites = allEntities.Split(';');
+            string[] entitites = allEntities.Split(';');                                                
             for (int i = 0; i < entitites.Length-1; i++)
             {
                 string[] entityParts = entitites[i].Split('|');
                 int id = Int32.Parse(entityParts[0]);
-                string name = entityParts[1];
+                string name = entityParts[1];                                                        // Citanje pdataka iz baze
                 string SID = entityParts[2];
                 DateTime time = DateTime.Parse(entityParts[3]);
                 Entitet e = new Entitet { Id = id, Name = name, SID = SID, Time = time };
                 entiteti.Add(e.Id, e);
             }
 
-            //  byte[] toEncrypt = ASCIIEncoding.ASCII.GetBytes(message);
-            /*byte[] encripted = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
-            string potpisanaPoruka = ASCIIEncoding.ASCII.GetString(encripted);*/
-            Entitet entitet = new Entitet();
-            
-            
-          // string Korisnik =  "wcfreader";
-         
+                 
             using (ClientFactory proxy = new ClientFactory(binding, address))
             {
-                //  string signCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name) + "_sign";
-                // X509Certificate2 certificateSign = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, signCertCN);
-                //byte[] signature = DigitalSignature.Create(potpisanaPoruka, "SHA1", certificateSign);
-
+                
 
                 /* proxy.TestConnection(entitet.SID);
                  proxy.Read(entitet, encripted, signature);
                  proxy.Modify(entitet, encripted, signature);
                  proxy.Supervise(entitet, encripted, signature);
                  proxy.DataFromServerToCLientDecripted();*/
+                
                 Menu(proxy);
                 Console.ReadLine();
             }
@@ -106,12 +88,12 @@ namespace Client
                         MenuRead(proxy, korisnik)
                             ;
                         break;
-                   /* case 3:
-                        proxy.Modify(korinik, signature);
-                        break;
+                    case 3:
+                        MenuModify(opcija.ToString(), proxy, korisnik);
+                         break;
                     case 4:
-                        proxy.Supervise(korinik, signature);
-                        break;*/
+                        MenuSupervise(opcija.ToString(), proxy, korisnik);
+                        break;
                     default:
                         Console.WriteLine("Pogresna opcija");
                         break;
@@ -139,6 +121,42 @@ namespace Client
             byte[] signature = DigitalSignature.Create(EnkriptovanaPoruka, "SHA1", certificateSign);
             proxy.Read(encripted, korisnik, signature);
             proxy.DataFromServerToCLientDecripted();
+        }
+        static void MenuSupervise(string operation, ClientFactory proxy, string korisnik)
+        {
+            string signCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name) + "_sign";
+            X509Certificate2 certificateSign = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, signCertCN);
+            string key = SecretKey.GenerateKey();
+
+            string keyFile = "C:/Bezbednost/clientKey.txt";
+            SecretKey.StoreKey(key, keyFile);
+            string message = MessageForSend(operation);
+            byte[] encripted = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
+            string EnkriptovanaPoruka = ASCIIEncoding.ASCII.GetString(encripted);
+
+            byte[] signature = DigitalSignature.Create(EnkriptovanaPoruka, "SHA1", certificateSign);
+            proxy.Supervise(encripted, korisnik, signature);
+            proxy.DataFromServerToCLientDecripted();
+        }
+
+        static void MenuModify(string operation, ClientFactory proxy, string korisnik)
+        {
+            string signCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name) + "_sign";
+            X509Certificate2 certificateSign = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, signCertCN);
+            string key = SecretKey.GenerateKey();
+            string keyFile = "C:/Bezbednost/clientKey.txt";
+            SecretKey.StoreKey(key, keyFile);
+            string message = MessageForSend(operation);
+            byte[] encripted = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
+            string EnkriptovanaPoruka = ASCIIEncoding.ASCII.GetString(encripted);
+
+            byte[] signature = DigitalSignature.Create(EnkriptovanaPoruka, "SHA1", certificateSign);
+            Console.WriteLine("Unesite ID dogadjaja koji zelite da izmenite");
+            string id = Console.ReadLine();
+            string ID = MessageForSend(id);
+            byte[] idDogadjaja = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, ID);
+            proxy.Modify(idDogadjaja, encripted, korisnik, signature);
+           // proxy.DataFromServerToCLientDecripted();
         }
         static void Create()
         {

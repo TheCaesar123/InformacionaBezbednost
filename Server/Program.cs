@@ -25,11 +25,14 @@ namespace Server
             loadBalancerBinding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
 
             Console.WriteLine("Korisnik koji je pokrenuo klijenta je : " + WindowsIdentity.GetCurrent().Name);
+            
+            
             using (ServerProxy proxy = new ServerProxy(loadBalancerBinding, loadBalancerAddress))
             {
                 Console.WriteLine("SERVER POVEZAN NA LoadBalancer");
-                proxy.Prosledi();
-
+               // proxy.Prosledi();
+              
+                
             }
 
             string srvCertCN = "wcfservice";
@@ -60,7 +63,7 @@ namespace Server
 
             host.Open();
             Console.WriteLine("Servis je uspesno pokrenut ");
-           
+          
             Console.ReadKey();
 
             host.Close();

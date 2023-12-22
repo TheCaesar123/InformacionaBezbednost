@@ -18,22 +18,9 @@ using System.Threading.Tasks;
 namespace Server
 {
     public class EntitetServer : IEntitet
-    {
-        public static string DataForClient { get; set; }
-        
-        public byte[] DataFromServerToCLient()
-        {
-            string key = SecretKey.GenerateKey();
-            SecretKey.StoreKey(key ,"C:/Bezbednost/clientKey.txt");
-            DataForClient = File.ReadAllText("C:/Bezbednost/Baza.txt");
-            string message = MessageForSend(DataForClient);
-          
-            byte[] encriptedDataForClient = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
-            
-            return encriptedDataForClient;
-        }
+    { 
       
-        public void Modify(string id, string korisnik, byte[] sign)
+        public byte[] Modify(byte[] idDogadjaja, byte[] operation ,string korisnik, byte[] sign)
         {
             
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, korisnik).Contains("OU=modify"))
@@ -44,22 +31,65 @@ namespace Server
                 string clientNameSign = korisnik + "_sign";
                 X509Certificate2 certificate = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople,
                 StoreLocation.LocalMachine, clientNameSign);
-                byte[] encmess = ASCIIEncoding.ASCII.GetBytes(id);
-                string message = ASCIIEncoding.ASCII.GetString(encmess);
-              //  entitet.Dencripted = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted);
-               // string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
-              //  Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
+                byte[] EncryptedData = new byte[512];
                
+                string message = ASCIIEncoding.ASCII.GetString(operation);
+
+                byte[] decOperation = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, operation);
+                byte[] decId = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, idDogadjaja);
+                string retVal = "";
+                string DecriptedOperation = ASCIIEncoding.ASCII.GetString(decOperation);
+                Console.WriteLine("Dekriptovana operacija od strane klijenta -> " + DecriptedOperation);
+                string DecriptedId = ASCIIEncoding.ASCII.GetString(decId);
+                Console.WriteLine("Dekriptovan  ID koji klijent zeli da izmeni -> " + DecriptedId);
 
 
-                //  DataFromServerToCLient();
+                NetTcpBinding loadBalancerBinding = new NetTcpBinding();
+                string loadBalancerAddress = "net.tcp://localhost:8002/IProsledi";
+
+                loadBalancerBinding.Security.Mode = SecurityMode.Transport;
+             //   loadBalancerBinding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
+              //  loadBalancerBinding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+
+                Console.WriteLine("Korisnik koji je pokrenuo klijenta je : " + WindowsIdentity.GetCurrent().Name);
+
+                Dictionary<int, Entitet> entiteti = new Dictionary<int, Entitet>();
+                string allEntities = File.ReadAllText("C:/Bezbednost/Baza.txt");
+                string[] entitites = allEntities.Split(';');
+                for (int i = 0; i < entitites.Length - 1; i++)
+                {
+                    string[] entityParts = entitites[i].Split('|');
+                    int id = Int32.Parse(entityParts[0]);
+                    string name = entityParts[1];                                                        // Citanje pdataka iz baze
+                    string SID = entityParts[2];
+                    DateTime time = DateTime.Parse(entityParts[3]);
+                    Entitet e = new Entitet { Id = id, Name = name, SID = SID, Time = time };
+                    entiteti.Add(e.Id, e);
+                }
+
+
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{korisnik}'s sign is valid");
-                    DataFromServerToCLient();
+                  
                     try
                     {
-
+                        using (ServerProxy proxy = new ServerProxy(loadBalancerBinding, loadBalancerAddress))
+                        {
+                            if (entiteti.ContainsKey(Int32.Parse(DecriptedId)))
+                            {                               
+                                Console.WriteLine($"Entitet sa ID : {idDogadjaja} -> {entiteti[Int32.Parse(DecriptedId)].ToString()}");
+                                proxy.Prosledi(DecriptedId, korisnik);
+                            }
+                            else
+                            {
+                              
+                                retVal = $"Ne postoji entitet sa ID : {DecriptedId}";
+                                message = MessageForSend(retVal);
+                                EncryptedData = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
+                            }
+                          
+                        }
                         Audit.AuthorizationSuccess(korisnik,
                             OperationContext.Current.IncomingMessageHeaders.Action);
                     }
@@ -67,12 +97,14 @@ namespace Server
                     {
                         Console.WriteLine(e.Message);
                     }
+                    
                 }
                 else
                 {
                     Console.WriteLine("Sign is invalid");
                    
                 }
+                return EncryptedData;
             }
             else
             {
@@ -113,25 +145,22 @@ namespace Server
                 Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
 
 
-                //    entitet.Dencripted = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted);
-                //    string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
-
-
-
                 if (DigitalSignature.Verify(ASCIIEncoding.ASCII.GetString(id), "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{korisnik}'s sign is valid");
                     Dictionary<int, Entitet> Entiteti = ReadFromDatabase();
-
+                    string message = "";
                     if (Entiteti.ContainsKey(Int32.Parse(DecriptedMessage)))
                     {
                         retVal = Entiteti[Int32.Parse(DecriptedMessage)].ToString();
-                        EncryptedData = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, retVal);
+                        message = MessageForSend(retVal);
+                        EncryptedData = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
                     }
                     else
                     {
                         retVal = $"Ne postoji entitet sa ID : {DecriptedMessage}";
-                        EncryptedData = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, retVal);
+                        message = MessageForSend(retVal);
+                        EncryptedData = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
                     }
                         
 
@@ -179,28 +208,50 @@ namespace Server
        
        
 
-        public void Supervise(string id, string korisnik, byte[] sign)
+        public byte[] Supervise(byte[] operation, string korisnik, byte[] sign)
         {
             //Console.WriteLine("SUPERVISE");
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, korisnik).Contains("OU=supervise"))
             {
+                string retVal = "";
                 Console.WriteLine("SUPERVISE");
+                byte[] EncryptedData = new byte[512];
                 string clientNameSign = korisnik + "_sign";
-                X509Certificate2 certificate = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople,
-                StoreLocation.LocalMachine, clientNameSign);
+                X509Certificate2 certificate = CertManager.GetCertificateFromStorage(StoreName.TrustedPeople, StoreLocation.LocalMachine, clientNameSign);
                 string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
-                byte[] encmess = ASCIIEncoding.ASCII.GetBytes(id);
-                string message = ASCIIEncoding.ASCII.GetString(encmess);
-            //    entitet.Dencripted = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encripted);
-             //   string DecriptedMessage = ASCIIEncoding.ASCII.GetString(entitet.Dencripted);
-             //   Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
+                // byte[] encmess = ASCIIEncoding.ASCII.GetBytes(id);
+                string message = ASCIIEncoding.ASCII.GetString(operation);
+
+                byte[] dec = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, operation);
+
+                string DecriptedMessage = ASCIIEncoding.ASCII.GetString(dec);
+                Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
+               
                
 
                 //      DataFromServerToCLient();
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{korisnik}'s sign is valid");
-                    DataFromServerToCLient();
+                    Dictionary<int, Entitet> Entiteti = ReadFromDatabase();
+                    string DataForClient = "";
+                   
+                   
+                    if (Entiteti.Count() > 0)
+                    {
+                        foreach (var item in Entiteti.Values)
+                        {
+                            retVal += item.ToString().Replace(';', '\n'); 
+                        }
+                        DataForClient = MessageForSend(retVal);
+                        EncryptedData = _3DES_Algorithm.Encrypt(key, CipherMode.ECB, DataForClient);
+                    }
+                    else
+                    {
+                        retVal = "Ne postoje entiteti u bazi!";
+                        DataForClient = MessageForSend(retVal);
+                        EncryptedData = _3DES_Algorithm.Encrypt(key, CipherMode.ECB, DataForClient);
+                    }
                     try
                     {
 
@@ -217,7 +268,7 @@ namespace Server
                     Console.WriteLine("Sign is invalid");
                     
                 }
-
+                return EncryptedData;
             }
             else
             {
@@ -235,6 +286,7 @@ namespace Server
                 throw new FaultException<SecurityException>(new SecurityException(message));
        
             }
+            return null;
         }
       
         public Dictionary<int, Entitet> ReadFromDatabase()
@@ -291,5 +343,6 @@ namespace Server
 
         }
 
+       
     }
 }

@@ -2,6 +2,7 @@
 using Manager;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -60,15 +61,16 @@ namespace Client
             }
 
         }
-        public void Modify(string id, string korisnik, byte[] sign)
+        public byte[] Modify(byte[] id, byte[] operation ,string korisnik, byte[] sign)
         {
+          
             try
             {
 
-                factory.Modify(id, korisnik, sign);
+                poruka = factory.Modify(id, operation, korisnik, sign);
 
                 Console.WriteLine("Modify...");
-                poruka = factory.DataFromServerToCLient();
+               
             }
             catch (FaultException<SecurityException> e)
             {
@@ -78,6 +80,7 @@ namespace Client
             {
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
             }
+            return null;
         }
         public byte[] Read(byte[] id, string korisnik, byte[] sign)
         {
@@ -111,14 +114,14 @@ namespace Client
             return null;
         }
 
-        public void Supervise(string id, string korisnik, byte[] sign)
+        public byte[] Supervise(byte[] operation, string korisnik, byte[] sign)
         {
 
             try
             {
-                factory.Supervise(id, korisnik, sign);
+                poruka = factory.Supervise(operation, korisnik, sign);
                 Console.WriteLine("Supervise...");
-                poruka = factory.DataFromServerToCLient();
+           
             }
             catch (FaultException<SecurityException> e)
             {
@@ -128,6 +131,7 @@ namespace Client
             {
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
             }
+            return null;
         }
 
         public void DataFromServerToCLientDecripted()

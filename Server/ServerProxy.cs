@@ -11,6 +11,7 @@ namespace Server
     public class ServerProxy : ChannelFactory<IProsledi>, IProsledi, IDisposable
     {
         IProsledi factory;
+       
 
         public ServerProxy(NetTcpBinding binding, string address) : base(binding, address)
         {
@@ -19,11 +20,25 @@ namespace Server
             
         }
 
-        public void Prosledi()
+        public Entitet LBToWorker(Entitet e)
         {
-           // factory.Prosledi();
+            factory.LBToWorker(e);
+            return e;
+        }
+
+        public void Prosledi(string idDogadjaja, string korisnik)
+        {
+          
+            factory.Prosledi(idDogadjaja, korisnik);
+            Console.WriteLine(idDogadjaja + korisnik + "serverproxy");
             Console.WriteLine("ServerProxy poziv.");
         }
+
       
+
+        public Entitet WorkerToLB(Entitet e)
+        {
+            throw new  NotImplementedException();
+        }
     }
 }

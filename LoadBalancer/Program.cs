@@ -11,13 +11,15 @@ namespace LoadBalancer
 
             NetTcpBinding binding = new NetTcpBinding();
             string address = "net.tcp://localhost:8002/IProsledi";
+            
 
             binding.Security.Mode = SecurityMode.Transport;
             binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
-            binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+        //    binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
 
-            ServiceHost host = new ServiceHost(typeof(ProslediServer));
+            ServiceHost host = new ServiceHost(typeof(ServerToLBData));
             host.AddServiceEndpoint(typeof(IProsledi), binding, address);
+          
             host.Open();
             Console.WriteLine("LoadBalancer je uspesno pokrenut ");
             Console.ReadKey();

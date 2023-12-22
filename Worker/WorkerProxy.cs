@@ -11,20 +11,31 @@ namespace Worker
     public class WorkerProxy : ChannelFactory<IProsledi>, IProsledi, IDisposable
     {
         IProsledi factory;
-
+   
         public WorkerProxy(NetTcpBinding binding, string address) : base(binding, address)
         {
             factory = this.CreateChannel();
         }
+      
+        public Entitet LBToWorker(Entitet e)
+        {
+          
+            Entitet et = factory.LBToWorker(e);
+           
+            return et;
+           
+        }
 
-        public void Prosledi()
+        public void Prosledi(string idDogadjaja, string korisnik)
         {
             Console.WriteLine("WorkerProxy poziv.");
         }
 
-        public void ServerTOClient(Entitet entitet)
+        public Entitet WorkerToLB(Entitet e)
         {
-            Console.WriteLine(entitet.Name+"nestooo");
+            Console.WriteLine($"Worker pje poslao nove podatke za dogadjaj sa ID : {e.Id} -> {e.ToString()}");
+            factory.WorkerToLB(e);
+            return e;
         }
     }
 }
