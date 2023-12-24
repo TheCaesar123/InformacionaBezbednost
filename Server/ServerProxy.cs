@@ -20,25 +20,33 @@ namespace Server
             
         }
 
-        public Entitet LBToWorker(Entitet e)
+        public void LBtoServer(string Podaci)
         {
-            factory.LBToWorker(e);
+            factory.LBtoServer(Podaci);
+            Console.WriteLine(Podaci);
+        }
+
+        public Entitet LBToWorker(Entitet e, int mod_del)
+        {
+            factory.LBToWorker(e, mod_del);
             return e;
         }
 
         public void Prosledi(string idDogadjaja, string korisnik)
         {
-          
-            factory.Prosledi(idDogadjaja, korisnik);
-            Console.WriteLine(idDogadjaja + korisnik + "serverproxy");
             Console.WriteLine("ServerProxy poziv.");
+            factory.Prosledi(idDogadjaja, korisnik);
+            
+           
         }
 
       
 
         public Entitet WorkerToLB(Entitet e)
         {
-            throw new  NotImplementedException();
+            factory.WorkerToLB(e);
+            Console.WriteLine(e.ToString() + "server");
+            return e;
         }
     }
 }

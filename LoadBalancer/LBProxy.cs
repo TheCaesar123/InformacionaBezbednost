@@ -18,25 +18,33 @@ namespace LoadBalancer
 
         }
 
-        public Entitet LBToWorker(Entitet e)
+        public Entitet LBToWorker(Entitet e, int mod_del)
         {
             Console.WriteLine("poslato ka workeru");
-            factory.LBToWorker(e);
+            factory.LBToWorker(e, mod_del);
             return e;
           
         }
 
         public void Prosledi(string id, string korisnik)
         {
+          
             factory.Prosledi(id, korisnik);
         }
-
+        public void LBtoServer(string podaci)
+        {
+          
+            factory.LBtoServer(podaci);
+        }
         public Entitet WorkerToLB(Entitet e)
         {
             Console.WriteLine("Loadbalancer primio od workera");
             Entitet noviEnt = factory.WorkerToLB(e);
-            Console.WriteLine(noviEnt.ToString() + "ovdeee");
+            Console.WriteLine(e.ToString());
+          
             return noviEnt;
         }
+
+       
     }
 }

@@ -20,7 +20,7 @@ namespace Server
     public class EntitetServer : IEntitet
     { 
       
-        public byte[] Modify(byte[] idDogadjaja, byte[] operation ,string korisnik, byte[] sign)
+        public byte[] Modify(byte[] encriptedEntity, byte[] operation ,string korisnik, byte[] sign)
         {
             
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, korisnik).Contains("OU=modify"))
@@ -36,36 +36,24 @@ namespace Server
                 string message = ASCIIEncoding.ASCII.GetString(operation);
 
                 byte[] decOperation = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, operation);
-                byte[] decId = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, idDogadjaja);
+                byte[] decNewEntity = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, encriptedEntity);
                 string retVal = "";
                 string DecriptedOperation = ASCIIEncoding.ASCII.GetString(decOperation);
                 Console.WriteLine("Dekriptovana operacija od strane klijenta -> " + DecriptedOperation);
-                string DecriptedId = ASCIIEncoding.ASCII.GetString(decId);
-                Console.WriteLine("Dekriptovan  ID koji klijent zeli da izmeni -> " + DecriptedId);
-
+                string DecriptedEntity = ASCIIEncoding.ASCII.GetString(decNewEntity);
+                
+                
 
                 NetTcpBinding loadBalancerBinding = new NetTcpBinding();
                 string loadBalancerAddress = "net.tcp://localhost:8002/IProsledi";
 
                 loadBalancerBinding.Security.Mode = SecurityMode.Transport;
-             //   loadBalancerBinding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
-              //  loadBalancerBinding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
+  
 
-                Console.WriteLine("Korisnik koji je pokrenuo klijenta je : " + WindowsIdentity.GetCurrent().Name);
 
-                Dictionary<int, Entitet> entiteti = new Dictionary<int, Entitet>();
-                string allEntities = File.ReadAllText("C:/Bezbednost/Baza.txt");
-                string[] entitites = allEntities.Split(';');
-                for (int i = 0; i < entitites.Length - 1; i++)
-                {
-                    string[] entityParts = entitites[i].Split('|');
-                    int id = Int32.Parse(entityParts[0]);
-                    string name = entityParts[1];                                                        // Citanje pdataka iz baze
-                    string SID = entityParts[2];
-                    DateTime time = DateTime.Parse(entityParts[3]);
-                    Entitet e = new Entitet { Id = id, Name = name, SID = SID, Time = time };
-                    entiteti.Add(e.Id, e);
-                }
+                Dictionary<int, Entitet> entiteti = ReadFromDatabase();
+
+
 
 
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
@@ -76,19 +64,19 @@ namespace Server
                     {
                         using (ServerProxy proxy = new ServerProxy(loadBalancerBinding, loadBalancerAddress))
                         {
-                            if (entiteti.ContainsKey(Int32.Parse(DecriptedId)))
-                            {                               
-                                Console.WriteLine($"Entitet sa ID : {idDogadjaja} -> {entiteti[Int32.Parse(DecriptedId)].ToString()}");
-                                proxy.Prosledi(DecriptedId, korisnik);
+                            
+                            if (DecriptedEntity.Contains("brisanje"))
+                            {
+                                Console.WriteLine("Zahtev za brisanje se prosledjuje na LOADBALANCER");
+                                string[] parts = DecriptedEntity.Split('|');
+                                proxy.Prosledi(parts[0]+"|brisanje", korisnik);
                             }
                             else
                             {
-                              
-                                retVal = $"Ne postoji entitet sa ID : {DecriptedId}";
-                                message = MessageForSend(retVal);
-                                EncryptedData = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
+                                Console.WriteLine("Zahtev za izmenu se prosledjuje na LOADBALANCER");
+                                proxy.Prosledi(DecriptedEntity, korisnik);
                             }
-                          
+                            
                         }
                         Audit.AuthorizationSuccess(korisnik,
                             OperationContext.Current.IncomingMessageHeaders.Action);
@@ -126,7 +114,7 @@ namespace Server
             }
         }
         
-        public byte[] Read(byte[] id, string korisnik, byte[] sign)       
+        public byte[] Read(byte[] operation, string korisnik, byte[] sign)       
         {
             
             if (Manager.CertManager.GetGroup(StoreName.My, StoreLocation.LocalMachine, korisnik).Contains("OU=read"))
@@ -139,31 +127,37 @@ namespace Server
                 StoreLocation.LocalMachine, clientNameSign);
                 string key = SecretKey.LoadKey("C:/Bezbednost/clientKey.txt");
                 
-                byte[] dec = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, id);
+                byte[] dec = _3DES_Algorithm.Decrypt(key, CipherMode.ECB, operation);
                
                 string DecriptedMessage = ASCIIEncoding.ASCII.GetString(dec);
                 Console.WriteLine("Dekriptovana poruka od strane klijenta -> " + DecriptedMessage);
 
 
-                if (DigitalSignature.Verify(ASCIIEncoding.ASCII.GetString(id), "SHA1", sign, certificate))
+                if (DigitalSignature.Verify(ASCIIEncoding.ASCII.GetString(operation), "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{korisnik}'s sign is valid");
                     Dictionary<int, Entitet> Entiteti = ReadFromDatabase();
                     string message = "";
-                    if (Entiteti.ContainsKey(Int32.Parse(DecriptedMessage)))
+                    foreach (var item in Entiteti.Values)
                     {
-                        retVal = Entiteti[Int32.Parse(DecriptedMessage)].ToString();
+                        if (item.SID == korisnik)
+                        {
+                            retVal += item.ToString().Replace(';', '\n');
+                        }
+                    }
+                    if (retVal != "")
+                    {
                         message = MessageForSend(retVal);
                         EncryptedData = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
+
                     }
                     else
                     {
-                        retVal = $"Ne postoji entitet sa ID : {DecriptedMessage}";
+                        retVal = $"Trenutno nemate napravljene entitete u bazi";
                         message = MessageForSend(retVal);
                         EncryptedData = _3DES_Algorithm.Encrypt(key, System.Security.Cryptography.CipherMode.ECB, message);
                     }
-                        
-
+                  
                     try
                     {
 
@@ -187,7 +181,7 @@ namespace Server
             }
             else
             {
-               // string name = Manager.Formatter.ParseName(Thread.CurrentPrincipal.Identity.Name);
+                
                 DateTime time = DateTime.Now;
                 try
                 {
@@ -229,7 +223,7 @@ namespace Server
                
                
 
-                //      DataFromServerToCLient();
+                 
                 if (DigitalSignature.Verify(message, "SHA1", sign, certificate))
                 {
                     Console.WriteLine($"{korisnik}'s sign is valid");
@@ -288,7 +282,7 @@ namespace Server
             }
             return null;
         }
-      
+       
         public Dictionary<int, Entitet> ReadFromDatabase()
         {
             Dictionary<int, Entitet> entiteti = new Dictionary<int, Entitet>();

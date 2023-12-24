@@ -13,12 +13,13 @@ namespace Common
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         byte[] Read(byte[] id, string Korisnik, byte[] sign);
+      
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
         byte[] Supervise(byte[] operation, string Korisnik, byte[] sign);
         [OperationContract]
         [FaultContract(typeof(SecurityException))]
-        byte[] Modify(byte[] idDogadjaja, byte[] operation, string Korisnik, byte[] sign);
+        byte[] Modify(byte[] encriptedEntity, byte[] operation, string Korisnik, byte[] sign);
         [OperationContract]
         void TestConnection(string Korisnik);
        

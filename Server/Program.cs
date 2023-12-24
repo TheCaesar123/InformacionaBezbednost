@@ -42,6 +42,7 @@ namespace Server
             string address = "net.tcp://localhost:8001/Servis";
             ServiceHost host = new ServiceHost(typeof(EntitetServer));
             host.AddServiceEndpoint(typeof(IEntitet), binding, address);
+   
 
             host.Description.Behaviors.Remove(typeof(ServiceDebugBehavior));
             host.Description.Behaviors.Add(new ServiceDebugBehavior() { IncludeExceptionDetailInFaults = true });

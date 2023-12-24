@@ -14,7 +14,7 @@ namespace Worker
     public class WorkerToLB : IProsledi
     {
       
-        public Entitet LBToWorker(Entitet e)
+        public Entitet LBToWorker(Entitet e, int mod_del)
         {
             List<worker> workers = new List<worker>();
             Random random = new Random();
@@ -25,26 +25,27 @@ namespace Worker
             worker w1 = new worker(cost1);
             worker w2 = new worker(cost2);
             worker w3 = new worker(cost3);
-            Console.WriteLine("w1" + w1.CostFactor);
-            Console.WriteLine("w2" + w2.CostFactor);
-            Console.WriteLine("w3" + w3.CostFactor);
+            Console.WriteLine("Lista Workera :");
+            Console.WriteLine($"Worker {w1.Id}" + " Cost factor : " + w1.CostFactor);
+            Console.WriteLine($"Worker {w2.Id}" + " Cost factor : " + w2.CostFactor);
+            Console.WriteLine($"Worker {w3.Id}" + " Cost factor : " + w3.CostFactor);
+        
             workers.Add(w1);
             workers.Add(w2);
             workers.Add(w3);
+
             worker workerWithMinCost = workers.OrderBy(x => x.CostFactor).FirstOrDefault();
-            Console.WriteLine("Entitet za izmenu -> " + e.ToString());
+
            
 
             NetTcpBinding binding = new NetTcpBinding();
             string address = "net.tcp://localhost:8002/IProsledi";
 
             binding.Security.Mode = SecurityMode.Transport;
-            //binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
-            //binding.Security.Transport.ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign;
             using (WorkerProxy proxy = new WorkerProxy(binding, address))
             {
-                ObradaZahteva(workerWithMinCost, e);
-                Console.WriteLine("odabrani" + workerWithMinCost.CostFactor);
+                ObradaZahteva(workerWithMinCost, e, mod_del);
+                
                 proxy.WorkerToLB(e);
 
 
@@ -53,34 +54,58 @@ namespace Worker
             return e;
         }
 
-        public void ObradaZahteva(worker w, Entitet e)
+        public void ObradaZahteva(worker w, Entitet e, int mod_del)
         {
             Random random = new Random();
-            int newCost = random.Next(0, 5);
-            Entitet newData = new Entitet();
+            int newCost = random.Next(0, 11);
+           
             Dictionary<int, Entitet> AllEntities = ReadFromDatabase();
-            Console.WriteLine($"Podatak obradjuje worker ID: {w.Id}");
-            Console.WriteLine("Unesite nove podatke : ");
-            Console.WriteLine("Novo ime : ");
-            e.Name = Console.ReadLine();
-            e.Time = DateTime.Now;
-            newData = e;
-
-            Console.WriteLine("Entitet se obradjuje...");
-            AllEntities[e.Id] = newData;
-            string toWrite = "";
-            foreach (Entitet en in AllEntities.Values)
+            if (mod_del == 0)
             {
-                toWrite += en.ToString() + "\n";
-            }
-            File.WriteAllText("C:/Bezbednost/Baza.txt", toWrite);
-            Thread.Sleep(2000);
-            Console.WriteLine("Entitet je izmenjen");
-            w.CostFactor += newCost;
+                Console.WriteLine($"Podatak obradjuje worker ID: {w.Id}");
 
-          
+
+                Console.WriteLine("Entitet se obradjuje...");
+                AllEntities[e.Id] = e;
+                string toWrite = "";
+                foreach (Entitet en in AllEntities.Values)
+                {
+                    toWrite += en.ToString() + "\n";
+                }
+                File.WriteAllText("C:/Bezbednost/Baza.txt", toWrite);
+                Thread.Sleep(2000);
+                Console.WriteLine("*******************");
+                Console.WriteLine("Entitet je izmenjen");
+                Console.WriteLine("*******************");
+
+                w.CostFactor += newCost;
+            }
+            else
+            {
+                Console.WriteLine($"Podatak ce obrisati worker ID: {w.Id}");
+
+
+                Console.WriteLine("Entitet se brise...");
+                AllEntities.Remove(e.Id);
+                string toWrite = "";
+                foreach (Entitet en in AllEntities.Values)
+                {
+                    toWrite += en.ToString() + "\n";
+                }
+                File.WriteAllText("C:/Bezbednost/Baza.txt", toWrite);
+                Thread.Sleep(2000);
+                Console.WriteLine("*******************");
+                Console.WriteLine("Entitet je obrisan");
+                Console.WriteLine("*******************");
+
+                w.CostFactor += newCost;
+            }
+
+
+            Console.WriteLine($"Novi cost factor workera sa ID : {w.Id} ->  {w.CostFactor}");
 
         }
+
         public Dictionary<int, Entitet> ReadFromDatabase()
         {
             Dictionary<int, Entitet> entiteti = new Dictionary<int, Entitet>();
@@ -104,6 +129,11 @@ namespace Worker
         }
 
         Entitet IProsledi.WorkerToLB(Entitet e)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LBtoServer(string Podaci)
         {
             throw new NotImplementedException();
         }

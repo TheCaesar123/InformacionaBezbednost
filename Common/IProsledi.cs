@@ -12,10 +12,12 @@ namespace Common
     public interface IProsledi
     {
         [OperationContract]
-        void Prosledi(string id, string korisnik);
+        void Prosledi(string EntitetzaIzmenu, string korisnik);
         [OperationContract]
-        Entitet LBToWorker(Entitet e);
+        Entitet LBToWorker(Entitet e, int Mod_Del);
         [OperationContract]
         Entitet WorkerToLB(Entitet e);
+        [OperationContract]
+        void LBtoServer(string Podaci);
     }
 }

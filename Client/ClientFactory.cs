@@ -18,8 +18,11 @@ namespace Client
     {
         public static string ulogovanKorisnik = "";
         public static byte[] poruka;
+        public bool Subscriber { get; set; } = false;
 
         IEntitet factory;
+
+
         public ClientFactory(NetTcpBinding binding, EndpointAddress address) : base(binding, address)
         {
             string cltCertCN = Formatter.ParseName(WindowsIdentity.GetCurrent().Name);
@@ -32,8 +35,13 @@ namespace Client
 
             this.Credentials.ClientCertificate.Certificate = CertManager.GetCertificateFromStorage(StoreName.My, StoreLocation.LocalMachine, cltCertCN);
 
-
-
+            Random rand = new Random();
+            int broj = rand.Next(0, 101);
+            if (broj > 50)
+            {
+                this.Subscriber = true;
+                Console.WriteLine("SUBSCIBER");
+            }
             factory = this.CreateChannel();
 
         }
@@ -69,7 +77,7 @@ namespace Client
 
                 poruka = factory.Modify(id, operation, korisnik, sign);
 
-                Console.WriteLine("Modify...");
+                Console.WriteLine("Vas zahtev je uspesno obradjen");
                
             }
             catch (FaultException<SecurityException> e)
@@ -149,5 +157,7 @@ namespace Client
                 Console.WriteLine("[FAILED] ERROR = {0}", e.Message);
             }
         }
+
+        
     }
 }
